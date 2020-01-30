@@ -36,7 +36,7 @@ prop.sf <- function(df, weight) {
         ##### prop.sf #####
         # weigh: sf
         s <- df$sf_narrow
-        w <- df[weight]
+        w <- df[[weight]]
         # xtab
         x <- round(xtabs(w ~ s), digits = 0); x
         n <- names(x)
