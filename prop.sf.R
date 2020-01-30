@@ -50,7 +50,13 @@ prop.table1 = Reduce(function(...) merge(..., all = TRUE), prop.list1)
 prop.table2 = Reduce(function(...) merge(..., all = TRUE), prop.list2)
 
 prop.table <- merge(prop.table1, prop.table2, by = "type")
-prop.table[ , sort(names(prop.table))]
+order <- sort(names(prop.table)); order
+prop.table <- prop.table[ , ..order]
 
 # stop cluster ------------------------------------------------------------
 stopCluster(cl)
+
+# write rds
+saveRDS(prop.table, "prop.sf.all.rds")
+# write csv
+write_excel_csv(prop.table, "prop.sf.all.csv")
