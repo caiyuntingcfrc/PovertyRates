@@ -3,7 +3,7 @@
 # source function: ins.pack
 devtools::source_url("https://raw.githubusercontent.com/caiyuntingcfrc/PovertyRates/master/func_ins.pack.R")
 # load packages
-ins.pack("tidyverse", "magrittr", "feather", "data.table", "epiDisplay")
+ins.pack("magrittr", "data.table", "epiDisplay")
 
 
 # function: prop.sf -------------------------------------------------------
@@ -33,6 +33,11 @@ prop.sf <- function(df, weight) {
         ##### recode sf: single parent families #####
         df[ , sf_narrow := ifelse(sf == 3L & n.children >= 1, 3.1, sf)]
         
+        ##### check if the weight is numeric #####
+        if(!is.numeric(df[[weight]])) {
+                df[[weight]] <- as.numeric(df[[weight]])
+                }
+        
         ##### prop.sf #####
         # weigh: sf
         s <- df$sf_narrow
@@ -43,23 +48,29 @@ prop.sf <- function(df, weight) {
         # weigh
         weighed <- mapply(rep, n, times = x)
         l <- unlist(weighed, use.names = FALSE)
-        t <- tab1(l, decimal = 2, graph = FALSE) %>% 
+        dt <- tab1(l, decimal = 2, graph = FALSE) %>% 
                 .[["output.table"]] %>% 
                 as.data.table()
         # remove cum.percentage
-        t <- t[-9, ]
+        dt <- dt[-9, ]
         # add type
-        t[ , `Cum. percent` := NULL][ , type := c("single-person", 
-                                                  "married-couple", 
-                                                  "single-parent (broad)", 
-                                                  "single-parent (narrow)", 
-                                                  "nuclear", 
-                                                  "grandparent", 
-                                                  "stem", 
-                                                  "others")]
+        dt[ , `Cum. percent` := NULL]
+        dt[ , `Frequency` := NULL]
+        dt[ , type := c("single-person", 
+                        "married-couple", 
+                        "single-parent (broad)", 
+                        "single-parent (narrow)", 
+                        "nuclear",
+                        "grandparent", 
+                        "stem", 
+                        "others")]
         # set column order
-        setcolorder(t, c(3, 2, 1))
+        setcolorder(dt, c(2, 1))
+        # set column name
+        setnames(dt, c("type", df$year[1] + 1911L))
+        # set key
+        dt[ , key = "type"]
         
         ###### return #####
-        return(t)
+        return(dt)
 }

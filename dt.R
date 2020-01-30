@@ -57,17 +57,18 @@ t <- tab1(l, decimal = 2, graph = FALSE) %>%
 # remove cum.percentage
 t <- t[-9, ]
 # add type
-t[ , `Cum. percent` := NULL][ , type := c("single-person", 
-                                          "married-couple", 
-                                          "single-parent (broad)", 
-                                          "single-parent (narrow)", 
-                                          "nuclear", 
-                                          "grandparent", 
-                                          "stem", 
-                                          "others")]
+t[ , `Cum. percent` := NULL]
+t[ , `Frequency` := NULL]
+t[ , type := c("single-person", 
+               "married-couple", 
+               "single-parent (broad)", 
+               "single-parent (narrow)", 
+               "nuclear", 
+               "grandparent", 
+               "stem", 
+               "others")]
 # set column order
-setcolorder(t, c(3, 2, 1))
+setcolorder(t, c(2, 1))
 
-# prop: single-parent by head's sex ---------------------------------------
-
-d
+# set column names
+setnames(t, c("type", df$year[1] + 1911L)); t
