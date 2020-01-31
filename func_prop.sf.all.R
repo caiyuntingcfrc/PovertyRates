@@ -31,14 +31,14 @@ prop.sf <- function(df, weight) {
         df[a18 %in% c(701, 702), sf := 7L]
         
         ##### recode sf: single parent families #####
-        df[ , sf_narrow := ifelse(sf == 3L & n.children >= 1, 3.1, sf)]
+        df[ , sf_narrow := ifelse(a18 %in% c(321, 322) & n.children >= 1, 3.1, sf)]
         
         ##### check if the weight is numeric #####
         if(!is.numeric(df[[weight]])) {
                 df[[weight]] <- as.numeric(df[[weight]])
                 }
         
-        ##### prop.sf #####
+        ##### prop.sf: all #####
         # weigh: sf
         s <- df$sf_narrow
         w <- df[[weight]]
@@ -68,9 +68,40 @@ prop.sf <- function(df, weight) {
         setcolorder(dt, c(2, 1))
         # set column name
         setnames(dt, c("type", df$year[1] + 1911L))
-        # set key
-        dt[ , key = "type"]
         
-        ###### return #####
-        return(dt)
+        ##### prop.sf: single-parent households by head's sex #####
+        df[sf_narrow == 3.1 & a18 == 321, single_hsex := 1]
+        df[sf_narrow == 3.1 & a18 == 322, single_hsex := 2]
+        df[ , single_hsex := ifelse(single_hsex %in% c(1, 2), single_hsex, 3)]
+        
+        # weigh: singele-parent households by head's sex
+        s <- df$single_hsex
+        w <- df[[weight]]
+        # xtab
+        x <- round(xtabs(w ~ s), digits = 0); x
+        n <- names(x)
+        # weigh
+        weighed <- mapply(rep, n, times = x)
+        l <- unlist(weighed, use.names = FALSE)
+        dt2 <- tab1(l, decimal = 2, graph = TRUE, bar.values = "percent") %>% 
+                .[["output.table"]] %>% 
+                as.data.table()
+        
+        # remove cum.percentage
+        dt2 <- dt2[-c(3, 4), ]
+        # add type
+        dt2[ , `Cum. percent` := NULL]
+        dt2[ , `Frequency` := NULL]
+        dt2[ , `type` := c("single-parent(narrow: m-headed)",
+                           "single-parent(narrow: f-headed)")]
+        # set column order
+        setcolorder(dt2, c(2, 1))
+        # set column names
+        setnames(dt2, c("type", df$year[1] + 1911L))
+        
+        ##### merge #####
+        out.table <- merge(dt, dt2, all = TRUE)
+        
+        ##### return #####
+        return(out.table)
 }
