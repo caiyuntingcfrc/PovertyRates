@@ -3,14 +3,14 @@
 # rm
 rm(list = ls()); cat("\14")
 # source: function prop.sf.all
-source("~/Github/PovertyRates/func_prop.sf.all.R")
+source("~/Github_CFRC/PovertyRates/func_prop.sf.all.R")
 # source: functioni PovertyRates_single
-source("~/Github/PovertyRates/func_PovertyRates_single.R")
+source("~/Github_CFRC/PovertyRates/func_PovertyRates_single.R")
 # devtools::source_url("https://raw.githubusercontent.com/caiyuntingcfrc/PovertyRates/master/func_prop.sf.all.R")
 # load packages
 ins.pack("tidyverse", "feather", "parallel", "data.table", "pbapply")
 # setwd
-setwd("i:/R_wd/tw_inc/R data files/")
+setwd("d:/R_wd/tw_inc/R data files/")
 
 # cluster -----------------------------------------------------------------
 

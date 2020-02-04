@@ -13,13 +13,16 @@ poverty.single <- function(df, weight) {
         # setDT
         setDT(df)
         # grep
-        l <- grep("^b4_", names(df), value = TRUE)
+        lb1 <- grep("^b1_", names(df))
         # numbers of people in the household
-        df[ , n.all := rowSums(!is.na(.SD)), .SDcols = l]
+        df[ , n.all := rowSums(!is.na(.SD), na.rm = TRUE), .SDcols = lb1]
+        
+        # grep
+        lb4 <- grep("^b4_", names(df))
         # numbers of children (< 18)
-        df[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = l]
+        df[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = lb4]
         # numbers of the elderly (>= 65)
-        df[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = l]
+        df[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = lb4]
         
         ##### recode sf #####
         df[a18 %in% c(101, 102), sf := 1L]
@@ -31,11 +34,11 @@ poverty.single <- function(df, weight) {
         df[a18 %in% c(701, 702), sf := 7L]
         
         # recode sf: single parent families
-        df[ , sf_narrow := ifelse(a18 %in% c(321, 322) & n.children >= 1, 3.1, sf)]
+        df[ , sf_narrow := ifelse(a18 %in% c(321, 322, 331, 332) & n.children >= 1, 3.1, sf)]
         
         ##### recode single_hsex #####
-        df[sf_narrow == 3.1 & a18 == 321, single_hsex := 1]
-        df[sf_narrow == 3.1 & a18 == 322, single_hsex := 2]
+        df[sf_narrow == 3.1 & a18 %in% c(321, 331), single_hsex := 1]
+        df[sf_narrow == 3.1 & a18 %in% c(322, 332), single_hsex := 2]
         df[ , single_hsex := ifelse(single_hsex %in% c(1, 2), single_hsex, 3)]
         
         ##### equivalized income #####

@@ -1,6 +1,6 @@
 d <- read_feather("df_inc88.feather")
 setDT(d)
-d <- d[a18 %in% c(331, 332) , ]
+d <- d[a18 %in% c(631, 632) , ]
 l <- grep("^b16_", names(d))
 # convert b2_ to numeric
 d[ , (l) := lapply(.SD, as.character), .SDcols = l]
