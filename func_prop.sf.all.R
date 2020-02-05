@@ -13,13 +13,16 @@ prop.sf <- function(df, weight) {
         #####  data.table #####                
         setDT(df)
         # grep
-        l <- grep("^b4_", names(df), value = TRUE)
-        # numbers of people in the household
-        df[ , n.all := rowSums(!is.na(.SD)), .SDcols = l]
+        lb1 <- grep("^b1_", names(df), value = TRUE)
+                # numbers of people in the household
+        df[ , n.all := rowSums(!is.na(.SD)), .SDcols = lb1]
+        
+        # grep
+        lb4 <- grep("^b4_", names(df), value = TRUE)
         # numbers of children (< 18)
-        df[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = l]
+        df[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = lb4]
         # numbers of the elderly (>= 65)
-        df[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = l]
+        df[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = lb4]
         
         ##### recode sf #####
         df[a18 %in% c(101, 102), sf := 1L]
@@ -31,7 +34,7 @@ prop.sf <- function(df, weight) {
         df[a18 %in% c(701, 702), sf := 7L]
         
         ##### recode sf: single parent families #####
-        df[ , sf_narrow := ifelse(a18 %in% c(321, 322) & n.children >= 1, 3.1, sf)]
+        df[ , sf_narrow := ifelse(sf == 3 & n.children >= 1, 3.1, sf)]
         
         ##### check if the weight is numeric #####
         if(!is.numeric(df[[weight]])) {
@@ -58,7 +61,7 @@ prop.sf <- function(df, weight) {
         dt[ , `Frequency` := NULL]
         dt[ , type := c("single-person", 
                         "married-couple", 
-                        "single-parent (broad)", 
+                        "single-parent (broad - narrow)", 
                         "single-parent (narrow)", 
                         "nuclear",
                         "grandparent", 
@@ -69,9 +72,33 @@ prop.sf <- function(df, weight) {
         # set column name
         setnames(dt, c("type", df$year[1] + 1911L))
         
+        ### prop.sf: single-parent households (broad)
+        # weigh: sf
+        s <- df$sf
+        w <- df[[weight]]
+        # xtab
+        x <- round(xtabs(w ~ s), digits = 0); x
+        n <- names(x)
+        # weigh
+        weighed <- mapply(rep, n, times = x)
+        l <- unlist(weighed, use.names = FALSE)
+        dt3 <- tab1(l, decimal = 2, graph = FALSE) %>% 
+                .[["output.table"]] %>% 
+                as.data.table()
+        # select sf == 3 (braod)
+        dt3 <- dt3[3, ]
+        # add type
+        dt3[ , `Cum. percent` := NULL]
+        dt3[ , `Frequency` := NULL]
+        dt3[ , type := "single-parent (broad)"]
+        # set column order
+        setcolorder(dt3, c(2, 1))
+        # set column name
+        setnames(dt3, c("type", df$year[1] + 1911L))
+        
         ##### prop.sf: single-parent households by head's sex #####
-        df[sf_narrow == 3.1 & a18 == 321, single_hsex := 1]
-        df[sf_narrow == 3.1 & a18 == 322, single_hsex := 2]
+        df[sf_narrow == 3.1 & a18 %in% c(321, 331), single_hsex := 1]
+        df[sf_narrow == 3.1 & a18 %in% c(322, 332), single_hsex := 2]
         df[ , single_hsex := ifelse(single_hsex %in% c(1, 2), single_hsex, 3)]
         
         # weigh: singele-parent households by head's sex
@@ -83,7 +110,7 @@ prop.sf <- function(df, weight) {
         # weigh
         weighed <- mapply(rep, n, times = x)
         l <- unlist(weighed, use.names = FALSE)
-        dt2 <- tab1(l, decimal = 2, graph = TRUE, bar.values = "percent") %>% 
+        dt2 <- tab1(l, decimal = 2, graph = FALSE) %>% 
                 .[["output.table"]] %>% 
                 as.data.table()
         
@@ -99,8 +126,35 @@ prop.sf <- function(df, weight) {
         # set column names
         setnames(dt2, c("type", df$year[1] + 1911L))
         
+        ##### prop.sf: single by sex of total single
+        dt4 <- df[single_hsex %in% c(1, 2), ]
+        # weigh: singele-parent households by head's sex
+        s <- dt4$single_hsex
+        w <- dt4[[weight]]
+        # xtab
+        x <- round(xtabs(w ~ s), digits = 0); x
+        n <- names(x)
+        # weigh
+        weighed <- mapply(rep, n, times = x)
+        l <- unlist(weighed, use.names = FALSE)
+        dt4 <- tab1(l, decimal = 2, graph = FALSE) %>% 
+                .[["output.table"]] %>% 
+                as.data.table()
+        
+        # remove cum.percentage
+        dt4 <- dt4[-3, ]
+        # add type
+        dt4[ , `Cum. percent` := NULL]
+        dt4[ , `Frequency` := NULL]
+        dt4[ , `type` := c("m-headed of single-parent (narrow)",
+                           "f-headed of single-parent (narrow)")]
+        # set column order
+        setcolorder(dt4, c(2, 1))
+        # set column names
+        setnames(dt4, c("type", df$year[1] + 1911L))
+        
         ##### merge #####
-        out.table <- merge(dt, dt2, all = TRUE)
+        out.table <- rbindlist(list(dt, dt2, dt3, dt4))
         
         ##### return #####
         return(out.table)
