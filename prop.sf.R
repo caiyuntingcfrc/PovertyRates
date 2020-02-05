@@ -58,13 +58,13 @@ prop.table <- prop.table[ , ..order]
 
 # set row and column order ------------------------------------------------
 
-# row
-nmr <- prop.table$type[c(9, 2, 5, 6, 7, 8, 3, 1, 10 ,4)]
-prop.table <- prop.table[nmr, ]
-
 # column
 nmc <- c("type", "1990")
 setcolorder(prop.table, c(nmc, setdiff(names(prop.table), nmc)))
+
+# row
+nmr <- prop.table$type[c(12, 4, 9, 7, 5, 2, 13, 6, 11, 10, 3, 1, 8)]
+prop.table <- prop.table[nmr, ]
 
 # save file ---------------------------------------------------------------
 
