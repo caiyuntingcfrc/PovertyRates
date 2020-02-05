@@ -3,14 +3,14 @@
 # rm
 rm(list = ls()); cat("\14")
 # source: function prop.sf.all
-source("~/Github_CFRC/PovertyRates/func_prop.sf.all.R")
+source("~/github/PovertyRates/func_prop.sf.all.R")
 # source: functioni PovertyRates_single
-source("~/Github_CFRC/PovertyRates/func_PovertyRates_single.R")
+source("~/github/PovertyRates/func_PovertyRates_single.R")
 # devtools::source_url("https://raw.githubusercontent.com/caiyuntingcfrc/PovertyRates/master/func_prop.sf.all.R")
 # load packages
 ins.pack("tidyverse", "feather", "parallel", "data.table", "pbapply", "haven")
 # setwd
-setwd("d:/R_wd/tw_inc/R data files/")
+setwd("~/R_wd/tw_inc/R data files/")
 
 # cluster -----------------------------------------------------------------
 
@@ -60,12 +60,12 @@ setwd("d:/R_wd/tw_inc/R data files/")
 
 # read rds
 df.list1 <- readRDS("df.list(90-107).rds")
+df.list1 <- df.list1[c(1:4, 9:18)]
 df.list2 <- readRDS("df.list(79-89).rds")
 
 # filter ------------------------------------------------------------------
 
-dt <- df.list1[[7]] 
-
+dt <- df.list1[[16]]; print(dt$year[1])
 # factor to numeric (bxx_)
 lb101 <- grep("^b|itm101$", names(dt))
 dt[ , lb101] <- lapply(dt[ , lb101], as.character) %>% lapply(., as.numeric)
@@ -95,7 +95,9 @@ c <- m[ , 2]
 dt[r , h.select := c]
 # recode h.marital
 dt[ , h.marital := .SD[[paste0("b16_", .BY$h.select)]], by = h.select]
-tab1(dt[a18 %in% c(331, 332, 321, 322) & n.children >= 1, h.marital], bar.values = "percent")
+tab1(dt[a18 %in% c(331, 332, 321, 322) & n.children >= 1, h.marital], 
+     bar.values = "percent", 
+     decimal = 2)
 
 # stop cluster ------------------------------------------------------------
 
