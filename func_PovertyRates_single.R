@@ -75,8 +75,10 @@ poverty.single <- function(df, weight) {
                 return(round(p, 2))
                 }
                 
+        
+        
         ##### poverty rate: single-parent families #####
-        dt <- df[sf_narrow == 3, ]
+        dt <- df[sf == 3, ]
         p.single_broad <- p.prop(df = dt, w = weight)
         names(p.single_broad) <- "single-parent (broad)"
         
@@ -84,6 +86,11 @@ poverty.single <- function(df, weight) {
         dt <- df[sf_narrow == 3.1, ]
         p.single_narrow <- p.prop(df = dt, w = weight)
         names(p.single_narrow) <- "single-parent (narrow)"
+        
+        ##### poverty rate: single-parent families #####
+        dt <- df[sf_narrow == 3, ]
+        p.single_broad_narrow <- p.prop(df = dt, w = weight)
+        names(p.single_broad_narrow) <- "single-parent (broad - narrow)"
         
         ##### poverty rate: single-parent families (m-headed) #####
         dt <- df[single_hsex == 1, ]
