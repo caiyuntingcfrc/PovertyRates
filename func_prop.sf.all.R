@@ -58,7 +58,7 @@ prop.sf <- function(df, weight) {
         dt <- dt[-9, ]
         # add type
         dt[ , `Cum. percent` := NULL]
-        dt[ , `Frequency` := NULL]
+        dt[ , `Percent` := NULL]
         dt[ , type := c("single-person", 
                         "married-couple", 
                         "single-parent (broad - narrow)", 
@@ -89,7 +89,7 @@ prop.sf <- function(df, weight) {
         dt3 <- dt3[3, ]
         # add type
         dt3[ , `Cum. percent` := NULL]
-        dt3[ , `Frequency` := NULL]
+        dt3[ , `Percent` := NULL]
         dt3[ , type := "single-parent (broad)"]
         # set column order
         setcolorder(dt3, c(2, 1))
@@ -118,7 +118,7 @@ prop.sf <- function(df, weight) {
         dt2 <- dt2[-c(3, 4), ]
         # add type
         dt2[ , `Cum. percent` := NULL]
-        dt2[ , `Frequency` := NULL]
+        dt2[ , `Percent` := NULL]
         dt2[ , `type` := c("single-parent(narrow: m-headed)",
                            "single-parent(narrow: f-headed)")]
         # set column order
@@ -145,7 +145,7 @@ prop.sf <- function(df, weight) {
         dt4 <- dt4[-3, ]
         # add type
         dt4[ , `Cum. percent` := NULL]
-        dt4[ , `Frequency` := NULL]
+        dt4[ , `Percent` := NULL]
         dt4[ , `type` := c("m-headed of single-parent (narrow)",
                            "f-headed of single-parent (narrow)")]
         # set column order

@@ -128,7 +128,7 @@ prop.marital <- function(df, weight) {
         if(dt1[["year"]][1] %in% 79:103) {
                 
                 out.table <- out.table[-5, ]
-                out.table[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.table[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.table[ , marital := c("unmarried", 
                                           "divorced", 
                                           "separated", 
@@ -141,7 +141,7 @@ prop.marital <- function(df, weight) {
         } else if(dt1[["year"]][1] >= 104) {
                 
                 out.table <- out.table[-3, ]
-                out.table[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.table[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.table[ , marital := c("unmarried", 
                                           "divorced, separated or widowed")]
                 # set column order
@@ -174,7 +174,7 @@ prop.marital <- function(df, weight) {
         if(dtM[["year"]][1] %in% 79:103) {
                 
                 out.tableM <- out.tableM[-5, ]
-                out.tableM[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.tableM[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.tableM[ , marital := c("unmarried", 
                                           "divorced", 
                                           "separated", 
@@ -187,7 +187,7 @@ prop.marital <- function(df, weight) {
         } else if(dtM[["year"]][1] >= 104) {
                 
                 out.tableM <- out.tableM[-3, ]
-                out.tableM[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.tableM[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.tableM[ , marital := c("unmarried", 
                                           "divorced, separated or widowed")]
                 # set column order
@@ -219,7 +219,7 @@ prop.marital <- function(df, weight) {
         if(dtF[["year"]][1] %in% 79:103) {
                 
                 out.tableF <- out.tableF[-5, ]
-                out.tableF[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.tableF[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.tableF[ , marital := c("unmarried", 
                                           "divorced", 
                                           "separated", 
@@ -232,7 +232,7 @@ prop.marital <- function(df, weight) {
         } else if(dtF[["year"]][1] >= 104) {
                 
                 out.tableF <- out.tableF[-3, ]
-                out.tableF[ , Frequency := NULL][ , `Cum. percent` := NULL]
+                out.tableF[ , Percent := NULL][ , `Cum. percent` := NULL]
                 out.tableF[ , marital := c("unmarried", 
                                           "divorced, separated or widowed")]
                 # set column order
@@ -307,7 +307,7 @@ setcolorder(prop.table79_103, c(nmc, setdiff(names(prop.table79_103), nmc)))
 prop.table79_103 <- prop.table79_103[c(3, 1, 2, 4), ]
 
 # save
-write_excel_csv(prop.table79_103, "p.marital_single_all(79-103).csv")
+write_excel_csv(prop.table79_103, "f.marital_single_all(79-103).csv")
 
 # p.m
 prop.table79_103M <- merge(p.m79_89, p.m90_103, by = "m.marital")
@@ -323,7 +323,7 @@ setcolorder(prop.table79_103M, c(nmc, setdiff(names(prop.table79_103M), nmc)))
 prop.table79_103M <- prop.table79_103M[c(3, 1, 2, 4), ]
 
 # save
-write_excel_csv(prop.table79_103M, "p.marital_single_M(79-103).csv")
+write_excel_csv(prop.table79_103M, "f.marital_single_M(79-103).csv")
 
 # p.f
 prop.table79_103F <- merge(p.f79_89, p.f90_103, by = "f.marital")
@@ -339,7 +339,7 @@ setcolorder(prop.table79_103F, c(nmc, setdiff(names(prop.table79_103F), nmc)))
 prop.table79_103F <- prop.table79_103F[c(3, 1, 2, 4), ]
 
 # save
-write_excel_csv(prop.table79_103F, "p.marital_single_F(79-103).csv")
+write_excel_csv(prop.table79_103F, "f.marital_single_F(79-103).csv")
 
 # 104-107 -----------------------------------------------------------------
 
@@ -357,7 +357,7 @@ setcolorder(prop.table104_107, c(nmc, setdiff(names(prop.table104_107), nmc)))
 prop.table104_107 <- prop.table104_107[c(2, 1), ]
 
 # save
-write_excel_csv(prop.table104_107, "p.marital_single_all(104-107).csv")
+write_excel_csv(prop.table104_107, "f.marital_single_all(104-107).csv")
 
 # p.m
 prop.table104_107M <- p.m104_107
@@ -374,7 +374,7 @@ setcolorder(prop.table104_107M, c(nmc, setdiff(names(prop.table104_107M), nmc)))
 prop.table104_107M <- prop.table104_107M[c(2, 1), ]
 
 # save
-write_excel_csv(prop.table104_107M, "prop.marital_single_M(104-107).csv")
+write_excel_csv(prop.table104_107M, "f.marital_single_M(104-107).csv")
 
 # p.f
 prop.table104_107F <- p.f104_107
@@ -391,6 +391,6 @@ setcolorder(prop.table104_107F, c(nmc, setdiff(names(prop.table104_107F), nmc)))
 prop.table104_107F <- prop.table104_107F[c(2, 1), ]
 
 # save
-write_excel_csv(prop.table104_107F, "prop.marital_single_F(104-107).csv")
+write_excel_csv(prop.table104_107F, "f.marital_single_F(104-107).csv")
 
 
