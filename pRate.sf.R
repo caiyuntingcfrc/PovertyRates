@@ -17,6 +17,11 @@ df.list1 <- readRDS("df.list(79-89).rds")
 df.list2 <- readRDS("df.list(90-107).rds")
 threshold.list <- readRDS("povertyThreshold.rds")
 
+# setDT -------------------------------------------------------------------
+
+df.list1 <- sapply(df.list1, setDT)
+df.list2 <- sapply(df.list2, setDT)
+
 # year
 year1 <- sapply(df.list1, function(...){y <- ...[["year"]][1]}) + 1911L
 year2 <- sapply(df.list2, function(...){y <- ...[["year"]][1]}) + 1911L
@@ -270,33 +275,50 @@ dt <- dt %>% spread(year, `poverty.rate`)
 p.stem <- dt %>% mutate(type = "stem")
 # rm
 rm(dt)
+l <- grep("^p\\.", ls(), value = TRUE) %>% .[!(. %in% c("p.1", "p.2"))]; l
+l <- mget(l)
+pr.dt <- rbindlist(l)
+
+# column order
+nmc <- c("type", "1990")
+setcolorder(pr.dt, c(nmc, setdiff(names(pr.dt), nmc)))
+
+# row order
+nmr <- pr.dt$type[c(5, 1, 6, 3, 2, 9, 4, 8, 7)]
+pr.dt <- pr.dt[c(5, 1, 6, 3, 2, 9, 4, 8, 7), ]
+
+write_excel_csv(pr.dt, "pRate.sf.csv")
 
 # single-parent hidden in stem --------------------------------------------
 
-dt <- df.list1[[1]]
+dt <- df.list1[[2]]
 dt <- dt[a18 %in% c(611, 612), ]
 
+lb <- grep("^b2|^b4_|^b16", names(dt))
 lb2 <- grep("^b2_", names(dt))
+lb4 <- grep("^b4_", names(dt))
+lb16 <- grep("^b16_", names(dt))
+
+# recode: n.kid and n.grandkid
+
 dt[ , n.kid := rowSums(.SD == 3, na.rm = TRUE), .SDcols = lb2]
 dt[ , n.grandkid := rowSums(.SD == 4, na.rm = TRUE), .SDcols = lb2]
 
-# filter: children >=1 and only one of the parent
-dt <- dt[n.kid == 1 & n.grandkid >= 1 & n.children >= 1, ]
+t <- dt[ , .SD == 3, .SDcols = lb2]
+w2 <- dt[ , ..lb16]
 
-# the single parent's sex
-m <- which(dt[ , ..lb2] == 3, arr.ind = TRUE)
-# row and column
-r <- m[ , 1]
-c <- m[ , 2]
-# recode kid.select
-dt[r , kid.select := c]
-# recode kid.marital
-dt[ , kid.marital := .SD[[paste0("b16_", .BY$kid.select)]], by = kid.select]
-epiDisplay::tab1(dt$kid.marital)
+t2 <- w2 * t %>% na_if(., 0)
 
-dt <- dt[kid.marital %in% c(91, 92, 93, 94, 95), ]
-epiDisplay::tab1(dt$kid.marital)
+n.1 <- vector("integer", nrow(t2))
+n.2 <- vector("integer", nrow(t2))
+for(i in 1:nrow(t2)) {
+        n.1[i] <- sum(t2[i, ] %in% 91:96, na.rm = TRUE)
+        n.2[i] <- sum(t2[i, ] == 91, na.rm = TRUE)
+        }
+dt$`n.unmarried.kid` <- n.1
+dt$`n.all.unmarried` <- n.2
 
-# df
-df <- dt
-poverty_rate(dt, threshold = threshold1[1], weight = "a21")
+dt[ , check.single.kid := ifelse(n.unmarried.kid == n.kid, 1, 0)]
+
+dt.test <- dt[n.children >= 1 & check.single.kid == 1 & !(n.unmarried.kid == n.all.unmarried), ..lb2]
+dt.test2 <- dt[n.children >= 1 & check.single.kid == 1 & !(n.unmarried.kid == n.all.unmarried), ..lb16]

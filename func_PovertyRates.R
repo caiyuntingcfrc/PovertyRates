@@ -32,7 +32,7 @@ poverty_rate <- function(df, weight,
         # weighed <- i[rep(1:length(i), times = w)]
         r <- weighed < threshold
         p <- length(r[r == TRUE]) / length(r) * 100
-        return(p)
+        return(round(p, 2))
 }
 
 # test load files
