@@ -9,6 +9,7 @@ ins.pack("tidyverse", "data.table")
 # funciton ----------------------------------------------------------------
 
 poverty_rate <- function(df, weight, 
+                         n.all = "a8", 
                          threshold , 
                          year) {
         
@@ -22,11 +23,17 @@ poverty_rate <- function(df, weight,
         }
         
         ##### weigh #####
+        i <- df[["eq_inc"]]
+        n <- df[[n.all]]
+        w <- df[[weight]]
+        # weigh by numbers of people in the household
+        w1 <- i[rep(1:length(i), times = n)]
+        w2 <- w[rep(1:length(n), times = n)]
         # weight table
         wtab <- round(xtabs(df[[weight]] ~ df[["eq_inc"]]))
         # replicate income by weight
-        i <- names(wtab)
-        weighed <- mapply(rep, x = i, times = wtab)
+        v <- names(wtab)
+        weighed <- mapply(rep, x = v, times = wtab)
         weighed <- as.numeric(unlist(weighed, use.names = TRUE))
         # deprecated
         # weighed <- i[rep(1:length(i), times = w)]
