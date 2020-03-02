@@ -1,4 +1,5 @@
 # prep and options --------------------------------------------------------
+
 # rm
 rm(list = ls()); cat("\14")
 # source
@@ -31,80 +32,99 @@ threshold1 <- threshold.list[match(year1, threshold.list$year), ]$threshold
 # threshold (90 - 107)
 threshold2 <- threshold.list[match(year2, threshold.list$year), ]$threshold
 
+# recode ------------------------------------------------------------------
 
-# prop --------------------------------------------------------------------
-
-df <- df.list1[[1]]
+dt <- df.list1[[1]]
 # factor to numeric (bxx_)
-df <- as.data.frame(df)
-lb101 <- grep("^b|itm101$", names(df))
-df[ , lb101] <- lapply(df[ , lb101], as.character) %>% 
+dt <- as.data.frame(dt, stringsAsFactors = FALSE)
+lb101 <- grep("^b|itm101$", names(dt))
+dt[ , lb101] <- lapply(dt[ , lb101], as.character) %>% 
         lapply(., as.numeric) 
 
-dt <- setDT(df)
+# dt ----------------------------------------------------------------------
+# setDT
+setDT(dt)
 
-# n.children
-lb4 <- grep("^b4_", names(dt))
-dt[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = lb4]
+# # a18 %in% c(621, 622) 2nd-gen & at least one dependent children
+# dt <- dt[a18 %in% c(621, 622), ][n.children >= 1, ]
 
-# a18 %in% c(611, 612) 1st-gen
-dt <- dt[a18 %in% c(611, 612), ]
-
-lb <- grep("^b2|^b4_|^b16", names(dt))
+lb1 <- grep("^b1_", names(dt))
 lb2 <- grep("^b2_", names(dt))
 lb4 <- grep("^b4_", names(dt))
 lb16 <- grep("^b16_", names(dt))
 
-# recode: n.kid and n.grandkid
+# recode: n.all
+dt[ , n.all := rowSums(!(is.na(.SD)), na.rm = TRUE), .SDcols = lb1]
+# recode: n.children (dependent children)
+dt[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = lb4]
+# recode: n.elder (>= 65)
+dt[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = lb4]
+# recode: n.spouse
+dt[ , n.spouse := rowSums(.SD == 2, na.rm = TRUE), .SDcols = lb2]
+# recode: n.kid (head's kid)
 dt[ , n.kid := rowSums(.SD == 3, na.rm = TRUE), .SDcols = lb2]
-dt[ , n.grandkid := rowSums(.SD == 4, na.rm = TRUE), .SDcols = lb2]
-dt[ , n.kidsSpouse := rowSums(.SD == 8, na.rm = TRUE), .SDcols = lb2]
+# recode: n.sibling
+dt[ , n.sibling := rowSums(.SD == 7, na.rm = TRUE), .SDcols = lb2]
+# recode: n.sbspouse
+dt[ , n.sbspouse := rowSums(.SD == 8, na.rm = TRUE), .SDcols = lb2]
 
-d1 <- dt[
-                n.grandkid >= 1 & 
-                n.children >= 1 & 
-                n.single.kid == n.kid, ..lb2]
-d2 <- dt[
-                n.grandkid >= 1 & 
-                n.children >= 1 & 
-                n.single.kid == n.kid, ..lb16]
+# filter ------------------------------------------------------------------
 
-# t: logical matrice
-t <- dt[ , .SD == 3, .SDcols = lb2]
-# b16_
-w <- dt[ , ..lb16]
-# kid's (2nd gen) marital statust and replace 0 with NA
-t <- w * t %>% na_if(., 0)
+# kids' age
+b2_kid <- dt[ ,.SD == 3, .SDcols = lb2] * dt[ , ..lb4] 
+b2_kid <- b2_kid %>% na_if(., 0)
 
-# dt <- as.data.frame(dt)
-# dt[ , lb16] <- t
+# number of dependent kids
+b2_kid[ , n.dependentKid := rowSums(.SD < 18, na.rm = TRUE)]
 
-# calculate numbers of single kids and numbers of all unmarried kids
-n.1 <- vector("integer", nrow(t))
-n.2 <- vector("integer", nrow(t))
-for(i in 1:nrow(t)) {
-        n.1[i] <- sum(t[i, ] %in% 91:96, na.rm = TRUE)
-        n.2[i] <- sum(t[i, ] == 91, na.rm = TRUE)
+# merge to dt
+dt[ , n.dependentKid := b2_kid$n.dependentKid]
+
+# n.children - n.dependentKid
+dt[ , n.diff := n.children - n.dependentKid]
+
+# diff
+diff <- dt[n.diff != 0, ]
+d2 <- diff[ , ..lb2]
+d4 <- diff[ , ..lb4]
+d16 <- diff[ , ..lb16]
+table(diff$a18)
+
+d2 <- diff[a18 == 422, ..lb2]
+d4 <- diff[a18 == 422, ..lb4]
+d16 <- diff[a18 == 422, ..lb16]
+
+d2 <- diff[a18 == 432, ..lb2]
+d4 <- diff[a18 == 432, ..lb4]
+d16 <- diff[a18 == 432, ..lb16]
+
+
+# prop --------------------------------------------------------------------
+
+weight <- "a21"
+n.dependentKid <- "n.dependentKid"
+n.children <- "n.children"
+
+prop.children <- function(df, weight) {
+        
+        ##### setDT #####
+        setDT(df)
+        
+        ##### check if the weight is numeric #####
+        if(!is.numeric(df[[weight]])) {
+                df[[weight]] <- as.numeric(df[[weight]])
+                }
+        
+        ##### weigh #####
+        n <- df[["n.dependentKid"]]
+        w <- df[[weight]]
+        # weigh by numbers of people in the household
+        w1 <- i[rep(1:length(i), times = n)]
+        w2 <- w[rep(1:length(n), times = n)]
+        # weight table
+        wtab <- round(xtabs(df[[weight]] ~ df[["eq_inc"]]))
+        # replicate income by weight
+        v <- names(wtab)
+        weighed <- mapply(rep, x = v, times = wtab)
+        weighed <- as.numeric(unlist(weighed, use.names = TRUE))
 }
-dt$`n.single.kid` <- n.1
-dt$`n.all.unmarried` <- n.2
-
-# filter all 2nd-gen are single and not all kids are unmarried
-dt <- dt[ , hidden_single := ifelse(n.children >= 1 & 
-                                            n.grandkid >= 1 &
-                                            n.single.kid == n.kid, 
-                                    1, NA)]
-df$h <- NA_integer_
-df$h[match(dt$x1, df$x1)] <- dt$hidden_single
-
-
-
-
-n.hidden <- table(df$h)
-
-setDT(df)
-# fill in hidden single
-# df[ , hidden_single := ifelse(a18 %in% c(611, 612, 621, 622, 631, 632), h, NA)]
-# fill in non-hidden single (stem-families)
-# df[ , hidden_single := ifelse(a18 %in% c(611, 612, 621, 622, 631, 632) & is.na(hidden_single), 0, h)]
-
