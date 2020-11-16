@@ -2,11 +2,11 @@
 # rm
 rm(list = ls()); cat("\14")
 # source
-source("~/Github_CFRC/PovertyRates/func_PovertyRates.R")
+source("~/Github/PovertyRates/func_PovertyRates.R")
 # ins.pack
 ins.pack("tidyverse", "data.table", "parallel", "pbapply", "epiDisplay")
 # setwd
-setwd("d:/R_wd/tw_inc/R data files/")
+setwd("i:/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
@@ -14,7 +14,7 @@ pboptions("style" = 1, "use_lb" = TRUE)
 
 # file
 df.list1 <- readRDS("df.list(79-89).rds")
-df.list2 <- readRDS("df.list(90-107).rds")
+df.list2 <- readRDS("df.list(90-108).rds")
 threshold.list <- readRDS("povertyThreshold.rds")
 
 # setDT -------------------------------------------------------------------

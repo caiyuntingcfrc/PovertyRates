@@ -3,16 +3,16 @@
 # rm
 rm(list = ls()); cat("\14")
 # source: function prop.sf.all
-source("~/Github_CFRC/PovertyRates/func_prop.sf.all.R")
+source("~/Github/PovertyRates/func_prop.sf.all.R")
 # source: functioni PovertyRates_single
-source("~/Github_CFRC/PovertyRates/func_PovertyRates_single.R")
+source("~/Github/PovertyRates/func_PovertyRates_single.R")
 # source: function povertyThreshold
-source("~/Github_CFRC/PovertyRates/func_povertyThreashold.R")
+source("~/Github/PovertyRates/func_povertyThreashold.R")
 # devtools::source_url("https://raw.githubusercontent.com/caiyuntingcfrc/PovertyRates/master/func_prop.sf.all.R")
 # load packages
 ins.pack("tidyverse", "feather", "parallel", "data.table", "pbapply")
 # setwd
-setwd("d:/R_wd/tw_inc/R data files/")
+setwd("i:/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
@@ -27,37 +27,39 @@ clusterEvalQ(cl, library(epiDisplay))
 
 # # load Rdata --------------------------------------------------------------
 # read rds
-# df.list1 <- readRDS("df.list(90-107).rds")
-# df.list2 <- readRDS("df.list(79-89).rds")
+# df.inc108 <- readRDS("df_inc108.rds")
+df.list1 <- readRDS("df.list(90-108).rds")
+# df.list1[[19]] <- df.inc108
+df.list2 <- readRDS("df.list(79-89).rds")
 
-# 90 - 107
-l1 <- list.files(pattern = "^df_inc[1][0][0-8].*.rds|^df_inc[9][0-9].*.rds")
-path_list1 <- paste(getwd(), "/", l1, sep = "")
-df.list1 <- parLapply(cl, path_list1, readRDS)
-
-# 79-89
-l2 <- list.files(pattern = "^df_inc[7][9].*.rds|^df_inc[8][0-9].*.rds")
-path_list2 <- paste(getwd(), "/", l2, sep = "")
-df.list2 <- parLapply(cl, path_list2, readRDS)
+# # 90 - 107
+# l1 <- list.files(pattern = "^df_inc[1][0][0-7].*.rds|^df_inc[9][0-9].*.feather")
+# path_list1 <- paste(getwd(), "/", l1, sep = "")
+# df.list1 <- parLapply(cl, path_list1, read_feather)
+# 
+# # 79-89
+# l2 <- list.files(pattern = "^df_inc[7][9].*.rds|^df_inc[8][0-9].*.rds")
+# path_list2 <- paste(getwd(), "/", l2, sep = "")
+# df.list2 <- parLapply(cl, path_list2, readRDS)
 # 
 # 
 # # save RData --------------------------------------------------------------
 # 
-saveRDS(df.list1, file = "df.list(90-108).rds")
-saveRDS(df.list2, file = "df.list(79-89).rds")
+# saveRDS(df.list1, file = "df.list(90-108).rds")
+# saveRDS(df.list2, file = "df.list(79-89).rds")
 
 
 # poverty threshold -------------------------------------------------------
 
-# threshold.list1 <- pblapply(df.list1, poverty_threshold, weight = "a20", cl = cl)
-# threshold.list2 <- pblapply(df.list2, poverty_threshold, weight = "a21", cl = cl)
-# 
-# threshold.table1 <- rbindlist(threshold.list1)
-# threshold.table2 <- rbindlist(threshold.list2)
-# 
-# threshold.table <- rbind(threshold.table1, threshold.table2) %>% .[order(.$year), ]
-# 
-# saveRDS(threshold.table, "povertyThreshold.rds")
+threshold.list1 <- pblapply(df.list1, poverty_threshold, weight = "a20", cl = cl)
+threshold.list2 <- pblapply(df.list2, poverty_threshold, weight = "a21", cl = cl)
+
+threshold.table1 <- rbindlist(threshold.list1)
+threshold.table2 <- rbindlist(threshold.list2)
+
+threshold.table <- rbind(threshold.table1, threshold.table2) %>% .[order(.$year), ]
+
+saveRDS(threshold.table, "povertyThreshold.rds")
 
 # proportion of SF (all) --------------------------------------------------
 
