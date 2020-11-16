@@ -31,20 +31,20 @@ clusterEvalQ(cl, library(epiDisplay))
 # df.list2 <- readRDS("df.list(79-89).rds")
 
 # 90 - 107
-l1 <- list.files(pattern = "^df_inc[1][0][0-7].*.rds|^df_inc[9][0-9].*.rds")
+l1 <- list.files(pattern = "^df_inc[1][0][0-8].*.rds|^df_inc[9][0-9].*.rds")
 path_list1 <- paste(getwd(), "/", l1, sep = "")
-df.list1 <- parLapply(cl, path_list1, read_feather)
+df.list1 <- parLapply(cl, path_list1, readRDS)
 
 # 79-89
 l2 <- list.files(pattern = "^df_inc[7][9].*.rds|^df_inc[8][0-9].*.rds")
 path_list2 <- paste(getwd(), "/", l2, sep = "")
-df.list2 <- parLapply(cl, path_list2, read_feather)
+df.list2 <- parLapply(cl, path_list2, readRDS)
 # 
 # 
 # # save RData --------------------------------------------------------------
 # 
-# saveRDS(df.list1, file = "df.list(90-107).rds")
-# saveRDS(df.list2, file = "df.list(79-89).rds")
+saveRDS(df.list1, file = "df.list(90-108).rds")
+saveRDS(df.list2, file = "df.list(79-89).rds")
 
 
 # poverty threshold -------------------------------------------------------
