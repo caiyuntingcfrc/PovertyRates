@@ -27,18 +27,18 @@ clusterEvalQ(cl, library(epiDisplay))
 
 # # load Rdata --------------------------------------------------------------
 # read rds
-df.list1 <- readRDS("df.list(90-107).rds")
-df.list2 <- readRDS("df.list(79-89).rds")
+# df.list1 <- readRDS("df.list(90-107).rds")
+# df.list2 <- readRDS("df.list(79-89).rds")
 
-# # 90 - 107
-# l1 <- list.files(pattern = "^df_inc[1][0][0-7].*.feather|^df_inc[9][0-9].*.feather")
-# path_list1 <- paste(getwd(), "/", l1, sep = "")
-# df.list1 <- parLapply(cl, path_list1, read_feather)
-# 
-# # 79-89
-# l2 <- list.files(pattern = "^df_inc[7][9].*.feather|^df_inc[8][0-9].*.feather")
-# path_list2 <- paste(getwd(), "/", l2, sep = "")
-# df.list2 <- parLapply(cl, path_list2, read_feather)
+# 90 - 107
+l1 <- list.files(pattern = "^df_inc[1][0][0-7].*.rds|^df_inc[9][0-9].*.rds")
+path_list1 <- paste(getwd(), "/", l1, sep = "")
+df.list1 <- parLapply(cl, path_list1, read_feather)
+
+# 79-89
+l2 <- list.files(pattern = "^df_inc[7][9].*.rds|^df_inc[8][0-9].*.rds")
+path_list2 <- paste(getwd(), "/", l2, sep = "")
+df.list2 <- parLapply(cl, path_list2, read_feather)
 # 
 # 
 # # save RData --------------------------------------------------------------
