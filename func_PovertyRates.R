@@ -14,6 +14,8 @@ poverty_rate <- function(df, weight,
         
         ##### equivalised income #####
         setDT(df)
+        # df[ , itm400 := ifelse(is.na(itm400), 0, itm400)]
+        # df[ , itm600 := ifelse(is.na(itm600), 0, itm600)]
         df[ , eq_inc := (itm400 - itm600) / sqrt(a8)]
         
         ##### check if the weight is numeric #####

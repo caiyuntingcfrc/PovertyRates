@@ -9,10 +9,11 @@ poverty_threshold <- function(df, weight,
                          type = "a18", n.adult = "a12") {
         
         ##### equivalised income #####
-        n <- df[[n.all]]
-        df <- df %>% 
-                mutate(sqrt_scale = sqrt(n),
-                       eq_inc = (itm400 - itm600) / sqrt_scale)
+        ##### equivalised income #####
+        setDT(df)
+        # df[ , itm400 := ifelse(is.na(itm400), 0, itm400)]
+        # df[ , itm600 := ifelse(is.na(itm600), 0, itm600)]
+        df[ , eq_inc := (itm400 - itm600) / sqrt(df[["a8"]])]
         
         ##### check if the weight is numeric #####
         if(!is.numeric(df[[weight]])) {

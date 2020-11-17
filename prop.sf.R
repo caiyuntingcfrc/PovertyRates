@@ -3,16 +3,16 @@
 # rm
 rm(list = ls()); cat("\14")
 # source: function prop.sf.all
-source("~/Github/PovertyRates/func_prop.sf.all.R")
+source("~/Github_CFRC/PovertyRates/func_prop.sf.all.R")
 # source: functioni PovertyRates_single
-source("~/Github/PovertyRates/func_PovertyRates_single.R")
+source("~/Github_CFRC/PovertyRates/func_PovertyRates_single.R")
 # source: function povertyThreshold
-source("~/Github/PovertyRates/func_povertyThreashold.R")
+source("~/Github_CFRC/PovertyRates/func_povertyThreashold.R")
 # devtools::source_url("https://raw.githubusercontent.com/caiyuntingcfrc/PovertyRates/master/func_prop.sf.all.R")
 # load packages
 ins.pack("tidyverse", "feather", "parallel", "data.table", "pbapply")
 # setwd
-setwd("i:/R_wd/tw_inc/R data files/")
+setwd("D:/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
@@ -24,12 +24,11 @@ clusterEvalQ(cl, library(tidyverse))
 clusterEvalQ(cl, library(magrittr))
 clusterEvalQ(cl, library(data.table))
 clusterEvalQ(cl, library(epiDisplay))
+clusterEvalQ(cl, library(rlist))
 
 # # load Rdata --------------------------------------------------------------
 # read rds
-# df.inc108 <- readRDS("df_inc108.rds")
 df.list1 <- readRDS("df.list(90-108).rds")
-# df.list1[[19]] <- df.inc108
 df.list2 <- readRDS("df.list(79-89).rds")
 
 # # 90 - 107
@@ -51,15 +50,16 @@ df.list2 <- readRDS("df.list(79-89).rds")
 
 # poverty threshold -------------------------------------------------------
 
-threshold.list1 <- pblapply(df.list1, poverty_threshold, weight = "a20", cl = cl)
-threshold.list2 <- pblapply(df.list2, poverty_threshold, weight = "a21", cl = cl)
-
-threshold.table1 <- rbindlist(threshold.list1)
-threshold.table2 <- rbindlist(threshold.list2)
-
-threshold.table <- rbind(threshold.table1, threshold.table2) %>% .[order(.$year), ]
-
-saveRDS(threshold.table, "povertyThreshold.rds")
+# threshold.list1 <- pblapply(df.list1, poverty_threshold, weight = "a20", cl = cl)
+# threshold.list2 <- pblapply(df.list2, poverty_threshold, weight = "a21", cl = cl)
+# 
+# threshold.table1 <- rbindlist(threshold.list1)
+# threshold.table2 <- rbindlist(threshold.list2)
+# 
+# threshold.table <- rbind(threshold.table1, threshold.table2) %>% .[order(.$year), ]
+# 
+# # saveRDS(threshold.table, "povertyThreshold.rds")
+# saveRDS(threshold.table, "povertyThreshold_rev.rds")
 
 # proportion of SF (all) --------------------------------------------------
 
@@ -81,7 +81,8 @@ nmc <- c("type", "1990")
 setcolorder(prop.table, c(nmc, setdiff(names(prop.table), nmc)))
 
 # row
-nmr <- prop.table$type[c(12, 4, 9, 7, 5, 2, 13, 6, 11, 10, 3, 1, 8)]
+nmr <- prop.table$type[c(14, 7, 11, 10, 8, 5, 15, 9, 12, 13, 17, 19, 16, 18, 
+                         6, 4, 1, 2, 3)]
 prop.table <- prop.table[nmr, ]
 
 # save file ---------------------------------------------------------------

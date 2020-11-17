@@ -2,20 +2,20 @@
 # rm
 rm(list = ls()); cat("\14")
 # source
-source("~/Github/PovertyRates/func_PovertyRates.R")
+source("~/Github_CFRC/PovertyRates/func_PovertyRates.R")
+source("~/Github_CFRC/misc/func_prop_withElder.R")
 # ins.pack
 ins.pack("tidyverse", "data.table", "parallel", "pbapply", "epiDisplay")
 # setwd
-setwd("i:/R_wd/tw_inc/R data files/")
+setwd("D:/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
 # read files --------------------------------------------------------------
-
 # file
 df.list1 <- readRDS("df.list(79-89).rds")
 df.list2 <- readRDS("df.list(90-108).rds")
-threshold.list <- readRDS("povertyThreshold.rds")
+threshold.list <- readRDS("povertyThreshold_rev.rds")
 
 # setDT -------------------------------------------------------------------
 
@@ -275,6 +275,11 @@ dt <- dt %>% spread(year, `poverty.rate`)
 p.stem <- dt %>% mutate(type = "stem")
 # rm
 rm(dt)
+
+# pRate: with children ----------------------------------------------------
+
+# df
+df1 <- lapply(df.list1, )
 
 
 # pRate: sf ---------------------------------------------------------------
