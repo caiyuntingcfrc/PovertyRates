@@ -2,12 +2,13 @@
 # rm
 rm(list = ls()); cat("\14")
 # source
-source("~/Github_CFRC/PovertyRates/func_PovertyRates.R")
-source("~/Github_CFRC/misc/func_prop_withElder.R")
+source("~/Documents/Github/PovertyRates/func_PovertyRates.R")
+source("~/Documents/Github/PovertyRates/func_povertyThreashold.R")
+source("~/Documents/Github/PovertyRates/func_PovertyRates_overall.R")
 # ins.pack
 ins.pack("tidyverse", "data.table", "parallel", "pbapply", "epiDisplay")
 # setwd
-setwd("D:/R_wd/tw_inc/R data files/")
+setwd("~/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
@@ -15,12 +16,12 @@ pboptions("style" = 1, "use_lb" = TRUE)
 # file
 df.list1 <- readRDS("df.list(79-89).rds")
 df.list2 <- readRDS("df.list(90-108).rds")
-threshold.list <- readRDS("povertyThreshold_rev.rds")
+threshold.list <- readRDS("povertyThreshold.rds")
 
 # setDT -------------------------------------------------------------------
 
-df.list1 <- sapply(df.list1, setDT)
-df.list2 <- sapply(df.list2, setDT)
+df.list1 <- lapply(df.list1, setDT)
+df.list2 <- lapply(df.list2, setDT)
 
 # year
 year1 <- sapply(df.list1, function(...){y <- ...[["year"]][1]}) + 1911L
@@ -31,6 +32,25 @@ threshold1 <- threshold.list[match(year1, threshold.list$year), ]$threshold
 # threshold (90 - 107)
 threshold2 <- threshold.list[match(year2, threshold.list$year), ]$threshold
 
+# calculate the child and the old -----------------------------------------
+# n.children
+for(i in 1:length(df.list1)){ 
+        df.list1[[i]][, n.children := rowSums(.SD < 18, na.rm = TRUE), 
+               .SDcols = grep("^b4_", names(df.list1[[i]]))]
+        }
+for(i in 1:length(df.list2)){ 
+        df.list2[[i]][, n.children := rowSums(.SD < 18, na.rm = TRUE), 
+               .SDcols = grep("^b4_", names(df.list2[[i]]))]
+        }
+# n.elder
+for(i in 1:length(df.list1)){ 
+        df.list1[[i]][, n.elder := rowSums(.SD >= 65, na.rm = TRUE), 
+               .SDcols = grep("^b4_", names(df.list1[[i]]))]
+        }
+for(i in 1:length(df.list2)){ 
+        df.list2[[i]][, n.elder := rowSums(.SD >= 65, na.rm = TRUE), 
+               .SDcols = grep("^b4_", names(df.list2[[i]]))]
+        }
 
 # pRate: Overall households -----------------------------------------------
 
@@ -38,17 +58,13 @@ threshold2 <- threshold.list[match(year2, threshold.list$year), ]$threshold
 df1 <- df.list1
 df2 <- df.list2
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -61,20 +77,16 @@ rm(dt)
 # pRate: single-person ----------------------------------------------------
 
 # df
-df1 <- sapply(df.list1, filter, a18 %in% c(101, 102))
-df2 <- sapply(df.list2, filter, a18 %in% c(101, 102))
+df1 <- lapply(df.list1, "[", a18 %in% c(101, 102))
+df2 <- lapply(df.list2, "[", a18 %in% c(101, 102))
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -86,20 +98,16 @@ rm(dt)
 
 # pRate: married-couple ---------------------------------------------------
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(201, 202))
-df2 <- lapply(df.list2, filter, a18 %in% c(201, 202))
+df1 <- lapply(df.list1, "[", a18 %in% c(201, 202))
+df2 <- lapply(df.list2, "[", a18 %in% c(201, 202))
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -112,22 +120,16 @@ rm(dt)
 # pRate: overall single-parent --------------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18))
-df2 <- lapply(df.list2, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18))
+df1 <- lapply(df.list1, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0)
+df2 <- lapply(df.list2, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0)
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -137,28 +139,20 @@ p.single_parent <- dt %>% mutate(type = "overall single-parent")
 # rm
 rm(dt)
 
-
 # pRate: single-parent (m-headed) -----------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18)) %>% 
-        lapply(., filter, a7 == 1)
-df2 <- lapply(df.list2, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18)) %>% 
-        lapply(., filter, a7 == 1)
-# func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
-                year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+df1 <- lapply(df.list1, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0 & a7 == 1)
+df2 <- lapply(df.list2, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0 & a7 == 1)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -171,24 +165,17 @@ rm(dt)
 # pRate: single-parent (f-headed) -----------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18)) %>% 
-        lapply(., filter, a7 == 2)
-df2 <- lapply(df.list2, filter, a18 %in% c(321, 322, 331, 332)) %>% 
-        lapply(., filter_at, vars(matches("^b4_")), any_vars(. < 18)) %>% 
-        lapply(., filter, a7 == 2)
-# func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
-                year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+df1 <- lapply(df.list1, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0 & a7 == 2)
+df2 <- lapply(df.list2, "[", a18 %in% c(321, 322, 331, 332) & n.children > 0 & a7 == 2)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -201,20 +188,16 @@ rm(dt)
 # pRate: nuclear ----------------------------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(421, 422, 431, 432)) 
-df2 <- lapply(df.list2, filter, a18 %in% c(421, 422, 431, 432)) 
+df1 <- lapply(df.list1, "[", a18 %in% c(421, 422, 431, 432)) 
+df2 <- lapply(df.list2, "[", a18 %in% c(421, 422, 431, 432)) 
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -227,20 +210,16 @@ rm(dt)
 # pRate: grandparent ------------------------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(511, 512, 531, 532))
-df2 <- lapply(df.list2, filter, a18 %in% c(511, 512, 531, 532)) 
+df1 <- lapply(df.list1, "[", a18 %in% c(511, 512, 531, 532))
+df2 <- lapply(df.list2, "[", a18 %in% c(511, 512, 531, 532)) 
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -253,20 +232,16 @@ rm(dt)
 # pRate: Stem -------------------------------------------------------------
 
 # df
-df1 <- lapply(df.list1, filter, a18 %in% c(611, 612, 621, 622, 631, 632))
-df2 <- lapply(df.list2, filter, a18 %in% c(611, 612, 621, 622, 631, 632)) 
+df1 <- lapply(df.list1, "[", a18 %in% c(611, 612, 621, 622, 631, 632))
+df2 <- lapply(df.list2, "[", a18 %in% c(611, 612, 621, 622, 631, 632)) 
 # func_povertyRate
-p.1 <- pbmapply(poverty_rate, df = df1, 
-                threshold = threshold1, 
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
                 year = year1, weight= "a21") %>% 
-        data.frame(`year` = year1, 
-                   `poverty rate` = .)
+        data.frame(`year` = year1, `poverty rate` = .)
 
-p.2 <- pbmapply(poverty_rate, df = df2, 
-                threshold = threshold2, 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
                 year = year2, weight= "a20") %>% 
-        data.frame(`year` = year2, 
-                   `poverty rate` = .)
+        data.frame(`year` = year2, `poverty rate` = .)
 # combine and order
 dt <- rbind(p.1, p.2)
 dt <- dt[order(dt$year), ]
@@ -277,10 +252,139 @@ p.stem <- dt %>% mutate(type = "stem")
 rm(dt)
 
 # pRate: with children ----------------------------------------------------
-
 # df
-df1 <- lapply(df.list1, )
+df1 <- lapply(df.list1, "[", n.children > 0)
+df2 <- lapply(df.list2, "[", n.children > 0)
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
 
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.withChildren <- dt %>% mutate(type = "with children")
+# rm
+rm(dt)
+
+# pRate: without children ----------------------------------------------------
+# df
+df1 <- lapply(df.list1, "[", n.children == 0)
+df2 <- lapply(df.list2, "[", n.children == 0)
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.withoutChildren <- dt %>% mutate(type = "without children")
+# rm
+rm(dt)
+
+# pRate: with elder ----------------------------------------------------
+# df
+df1 <- lapply(df.list1, "[", n.elder > 0)
+df2 <- lapply(df.list2, "[", n.elder > 0)
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.withElder <- dt %>% mutate(type = "with elder")
+# rm
+rm(dt)
+
+# pRate: without elder ----------------------------------------------------
+# df
+df1 <- lapply(df.list1, "[", n.elder == 0)
+df2 <- lapply(df.list2, "[", n.elder == 0)
+# func_povertyRate
+p.1 <- pbmapply(poverty_rate, df = df1, threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(poverty_rate, df = df2, threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.withoutElder <- dt %>% mutate(type = "without elder")
+# rm
+rm(dt)
+
+
+# pRate: overall population-----------------------------------------------------
+
+df1 <- df.list1
+df2 <- df.list2
+
+# func: pr.all
+p.1 <- pbmapply(pr.all, df = df1, n.ppl = "a8", threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(pr.all, df = df2, n.ppl = "a8", threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.overallPop <- dt %>% mutate(type = "overall population")
+# rm
+rm(dt)
+
+# pRate: overall children -----------------------------------------------------
+
+df1 <- df.list1
+df2 <- df.list2
+
+# func: pr.all
+p.1 <- pbmapply(pr.all, df = df1, n.ppl = "n.children", threshold = threshold1, 
+                year = year1, weight= "a21") %>% 
+        data.frame(`year` = year1, `poverty rate` = .)
+
+p.2 <- pbmapply(pr.all, df = df2, n.ppl = "n.children", threshold = threshold2, 
+                year = year2, weight= "a20") %>% 
+        data.frame(`year` = year2, `poverty rate` = .)
+
+# combine and order
+dt <- rbind(p.1, p.2)
+dt <- dt[order(dt$year), ]
+# spread
+dt <- dt %>% spread(year, `poverty.rate`)
+p.overallChildren <- dt %>% mutate(type = "overall children")
+# rm
+rm(dt)
 
 # pRate: sf ---------------------------------------------------------------
 
