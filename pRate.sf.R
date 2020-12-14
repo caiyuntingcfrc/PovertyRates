@@ -2,13 +2,13 @@
 # rm
 rm(list = ls()); cat("\14")
 # source
-source("~/Documents/Github/PovertyRates/func_PovertyRates.R")
-source("~/Documents/Github/PovertyRates/func_povertyThreashold.R")
-source("~/Documents/Github/PovertyRates/func_PovertyRates_overall.R")
+source("~/Github/PovertyRates/func_PovertyRates.R")
+source("~/Github/PovertyRates/func_povertyThreashold.R")
+source("~/Github/PovertyRates/func_PovertyRates_overall.R")
 # ins.pack
 ins.pack("tidyverse", "data.table", "parallel", "pbapply", "epiDisplay")
 # setwd
-setwd("~/R_wd/tw_inc/R data files/")
+setwd("i:/R_wd/tw_inc/R data files/")
 # pboptions
 pboptions("style" = 1, "use_lb" = TRUE)
 
@@ -385,6 +385,53 @@ dt <- dt %>% spread(year, `poverty.rate`)
 p.overallChildren <- dt %>% mutate(type = "overall children")
 # rm
 rm(dt)
+
+
+# pRate: with children by household type ----------------------------------
+
+df <- df.list2[[19]]
+
+# filter: working age head (working age: 18-64)
+df <- df[a6 >= 18 & a6 <= 64, ]
+# filter: at least one kid
+df <- df[n.children >= 1, ]
+# calc number of adults
+df[ , n.adult := rowSums(.SD >= 18, na.rm = TRUE), .SDcols = grep("^b4_", names(df))]
+df[ , oneAdult := ifelse(n.adult == 1, 1, 0)]
+
+threshold <- threshold.list$threshold[[30]]
+# all working-age households
+poverty_rate(df, "a20", threshold)
+# with one adult
+poverty_rate(df[oneAdult == 1, ], "a20", threshold)
+# two or more adults
+poverty_rate(df[oneAdult == 0, ], "a20", threshold)
+
+
+# pRate: with children by working status ----------------------------------
+
+df <- df.list2[[19]]
+# filter: working age head (working age: 18-64)
+df <- df[a6 >= 18 & a6 <= 64, ]
+# filter: at least one kid
+df <- df[n.children >= 1, ]
+
+# working status: b13_
+# df[ , haveWork := rowSums(.SD == 1, na.rm = TRUE), .SDcols = grep("^b13_", names(df))]
+a <- df[ , .SD >= 18, .SDcols = grep("^b4_", names(df))]
+b <- df[ , .SD == 1, .SDcols = grep("^b13", names(df))]
+# numbers of working adults
+df[ , haveWork := rowSums(a * b, na.rm = TRUE)]
+# have working adults
+df[ , withWorkingAdults := if_else(haveWork > 0, 1, 0)]
+
+# filter: with working adults
+
+threshold <- threshold.list$threshold[[30]]
+# with working adults
+poverty_rate(df[withWorkingAdults == 1, ], "a20", threshold)
+# without working adults
+poverty_rate(df[withWorkingAdults == 0, ], "a20", threshold)
 
 # pRate: sf ---------------------------------------------------------------
 
