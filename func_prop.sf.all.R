@@ -16,11 +16,20 @@ prop.sf <- function(df, weight) {
         # grep
         lb1 <- grep("^b1_", names(df))
         # numbers of people in the household
-        df[ , n.all := rowSums(!is.na(.SD), na.rm = TRUE), .SDcols = lb1]
+        if(df$year[1] %in% 80:83) {
+                df[ , n.all := rowSums(!is.na(.SD) & .SD != 0, na.rm = TRUE), .SDcols = lb1]
+        } else {
+                df[ , n.all := rowSums(!is.na(.SD), na.rm = TRUE), .SDcols = lb1]
+        }
+        
         # grep
         lb4 <- grep("^b4_", names(df))
         # numbers of children (< 18)
-        df[ , n.children := rowSums(.SD < 18, na.rm = TRUE), .SDcols = lb4]
+        if(df$year[1] %in% 80:83){
+                df[ , n.children := rowSums(.SD < 18 & .SD != 0 , na.rm = TRUE), .SDcols = lb4]        
+        } else {
+                df[ , n.children := rowSums(.SD < 18 , na.rm = TRUE), .SDcols = lb4]        
+        }
         # numbers of the elderly (>= 65)
         df[ , n.elderly := rowSums(.SD >= 65, na.rm = TRUE), .SDcols = lb4]
         
@@ -62,7 +71,7 @@ prop.sf <- function(df, weight) {
                 .[["output.table"]] %>% 
                 as.data.table()
         # remove cum.percentage
-        dt <- dt[-9, ]
+        dt <- dt[1:(nrow(dt)-1), ]
         # add type
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
@@ -99,7 +108,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         
         # remove cum.percentage
-        dt <- dt[-c(3, 4), ]
+        dt <- dt[1:(nrow(dt)-2), ]
         # add type
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
@@ -138,7 +147,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         
         # remove cum.percentage
-        dt <- dt[-3, ]
+        dt <- dt[1:(nrow(dt) - 1), ]
         # add type
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
@@ -167,7 +176,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         
         # remove cum.percentage
-        dt <- dt[-3, ]
+        dt <- dt[1:(nrow(dt) - 1), ]
         # add type
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
@@ -197,7 +206,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         
         # remove cum.percentage
-        dt <- dt[-3, ]
+        dt <- dt[1:(nrow(dt) - 1), ]
         # add type
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
@@ -224,7 +233,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
-        dt <- dt[-8, ]
+        dt <- dt[1:(nrow(dt) - 1), ]
         dt <- dt[ , `n` := n * Frequency]
         dt <- dt[ , Frequency := NULL]
         overallChildren <- sum(dt$n, na.rm = TRUE)
@@ -252,7 +261,7 @@ prop.sf <- function(df, weight) {
                 as.data.table()
         dt[ , `Cum. percent` := NULL]
         dt[ , `Percent` := NULL]
-        dt <- dt[-7, ]
+        dt <- dt[1:(nrow(dt) - 1), ]
         dt <- dt[ , `n` := n * Frequency]
         dt[ , Frequency := NULL]
         overallElderly <- sum(dt$n, na.rm = TRUE)

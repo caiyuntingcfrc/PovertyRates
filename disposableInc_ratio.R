@@ -62,7 +62,7 @@ d <- df[n.adults >= 2, ]
 d <- d[n.children == 0, ]
 
 # filter: one worker
-d <- d[n.workers > 0, ]
+d <- d[n.workers == 1, ]
 
 baseHousehold <- mean(eq_inc(d, "a20"), na.rm = TRUE)
 
@@ -109,4 +109,8 @@ a2w2 <- mean(eq_inc(d, "a20"), na.rm = TRUE)
 
 # ratio -------------------------------------------------------------------
 
-
+base <- rep(baseHousehold, 4)
+df_ratio <- data.table(familyTypes = c("base", "singleAdult", "a2w1", "a2w2"), 
+                       base = base, 
+                       eq_inc = c(baseHousehold, singleAdult, a2w1, a2w2))
+df_ratio[ , ratio := (eq_inc / base) * 100]
